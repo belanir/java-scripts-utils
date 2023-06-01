@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 
+
 const TableComponent = () => {
   const [data, setData] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -11,10 +13,15 @@ const TableComponent = () => {
   const fetchData = async () => {
     try {
       const response = await fetch('https://api.example.com/data');
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+
       const json = await response.json();
       setData(json);
     } catch (error) {
-      console.log('Error:', error);
+      setError(error.message);
     }
   };
 
@@ -43,3 +50,17 @@ const TableComponent = () => {
     return traverseObject(obj, prefix);
   };
 
+  const columns = getColumns(data[0] || {});
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  return (
+    <div style={{ height: 400, width: '100%' }}>
+      <DataGrid rows={data} columns={columns} pageSize={10} />
+    </div>
+  );
+};
+
+export default TableComponent;
