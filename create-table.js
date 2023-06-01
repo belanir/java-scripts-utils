@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-
+import axios from 'axios';
 
 const TableComponent = () => {
   const [data, setData] = useState([]);
@@ -12,45 +12,26 @@ const TableComponent = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('https://api.example.com/data');
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch data');
-      }
-
-      const json = await response.json();
-      setData(json);
+      const response = await axios.get('https://api.example.com/data');
+      setData(response.data);
     } catch (error) {
       setError(error.message);
     }
   };
 
-  const getColumns = (obj, prefix = '') => {
-    const columns = [];
-
-    const traverseObject = (obj, prefix) => {
-      Object.keys(obj).forEach((key) => {
-        const value = obj[key];
-        const field = prefix ? `${prefix}.${key}` : key;
-
-        if (typeof value === 'object' && value !== null) {
-          columns.push(...traverseObject(value, field));
-        } else {
-          columns.push({
-            field,
-            headerName: field.charAt(0).toUpperCase() + field.slice(1),
-            width: 200,
-          });
-        }
-      });
-
-      return columns;
-    };
-
-    return traverseObject(obj, prefix);
+  const getColumns = () => {
+    if (data.length > 0) {
+      const keys = Object.keys(data[0]);
+      return keys.map((key) => ({
+        field: key,
+        headerName: key.charAt(0).toUpperCase() + key.slice(1),
+        width: 200,
+      }));
+    }
+    return [];
   };
 
-  const columns = getColumns(data[0] || {});
+  const columns = getColumns();
 
   if (error) {
     return <div>Error: {error}</div>;
