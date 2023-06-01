@@ -1,3 +1,6 @@
+import React, { useEffect, useState } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
+
 const TableComponent = () => {
   const [data, setData] = useState([]);
 
@@ -40,13 +43,3 @@ const TableComponent = () => {
     return traverseObject(obj, prefix);
   };
 
-  const columns = getColumns(data[0] || {});
-
-  return (
-    <div style={{ height: 400, width: '100%' }}>
-      <DataGrid rows={data} columns={columns} pageSize={10} />
-    </div>
-  );
-};
-
-export default TableComponent;
