@@ -27,7 +27,9 @@ const CardComponent = () => {
 
   const renderTableRows = () => {
     if (data.length > 0) {
-      return data.map((item, index) => <tr key={index}>{renderTableCells(item)}</tr>);
+      return data.map((item, index) => (
+        <tr key={index}>{renderTableCells(item)}</tr>
+      ));
     }
     return null;
   };
@@ -43,15 +45,20 @@ const CardComponent = () => {
   };
 
   const renderTable = (nestedData) => {
-    return (
-      <table>
-        <tbody>{renderTableRowsForNestedData(nestedData)}</tbody>
-      </table>
-    );
+    if (Array.isArray(nestedData)) {
+      return (
+        <table>
+          <tbody>{renderTableRowsForNestedData(nestedData)}</tbody>
+        </table>
+      );
+    }
+    return null;
   };
 
   const renderTableRowsForNestedData = (nestedData) => {
-    return nestedData.map((item, index) => <tr key={index}>{renderTableCells(item)}</tr>);
+    return nestedData.map((item, index) => (
+      <tr key={index}>{renderTableCells(item)}</tr>
+    ));
   };
 
   const getAllHeaders = (obj) => {
