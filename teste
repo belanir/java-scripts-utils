@@ -1,0 +1,77 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, Typography, Grid, CircularProgress } from '@mui/material';
+import { green, red } from '@mui/material/colors';
+import axios from 'axios';
+
+function Dashboard() {
+  const [enqueuedWorkers, setEnqueuedWorkers] = useState(0);
+  const [runningWorkers, setRunningWorkers] = useState(0);
+  const [isAppRunning, setIsAppRunning] = useState(false);
+  const [currentJobs, setCurrentJobs] = useState(0);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get('YOUR_API_URL');
+      const data = response.data; // Assuming your API returns relevant data
+
+      setEnqueuedWorkers(data.enqueuedWorkers);
+      setRunningWorkers(data.runningWorkers);
+      setIsAppRunning(data.isAppRunning);
+      setCurrentJobs(data.currentJobs);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  return (
+    <div>
+      <Grid container spacing={3}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">Enqueued Workers</Typography>
+              <Typography variant="h4">{enqueuedWorkers}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">Running Workers</Typography>
+              <Typography variant="h4">{runningWorkers}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">App Status</Typography>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                {isAppRunning ? (
+                  <CircularProgress size={20} sx={{ color: green[500], marginRight: 10 }} />
+                ) : (
+                  <CircularProgress size={20} sx={{ color: red[500], marginRight: 10 }} />
+                )}
+                <Typography variant="subtitle1">{isAppRunning ? 'Running' : 'Not Running'}</Typography>
+              </div>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">Current Jobs</Typography>
+              <Typography variant="h4">{currentJobs}</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </div>
+  );
+}
+
+export default Dashboard;
