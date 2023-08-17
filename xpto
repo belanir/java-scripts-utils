@@ -1,0 +1,101 @@
+import React from 'react';
+import { render, fireEvent, waitFor, screen } from '@testing-library/react';
+import axios from 'axios'; // Import axios for mocking
+
+import JobDetailsModal from './JobDetailsModal';
+
+// Mock axios and its get method
+jest.mock('axios');
+
+describe('JobDetailsModal', () => {
+  beforeEach(() => {
+    // Reset axios mock before each test
+    axios.get.mockReset();
+  });
+
+  it('opens and closes the modal', () => {
+    render(<JobDetailsModal idJob="123" />);
+    const openButton = screen.getByLabelText('details');
+    fireEvent.click(openButton);
+
+    // Modal should open
+    const modal = screen.getByRole('dialog');
+    expect(modal).toBeInTheDocument();
+
+    const closeButton = screen.getByText('Ok');
+    fireEvent.click(closeButton);
+
+    // Modal should close
+    waitFor(() => expect(modal).not.toBeInTheDocument());
+  });
+
+  it('fetches job details and displays them', async () => {
+    const mockJobDetails = 'Mocked Job Details';
+    axios.get.mockResolvedValue({ data: mockJobDetails });
+
+    render(<JobDetailsModal idJob="123" />);
+    const openButton = screen.getByLabelText('details');
+    fireEvent.click(openButton);
+
+    // Wait for job details to be fetched and displayed
+    await waitFor(() => {
+      const jobDetailsElement = screen.getByText(mockJobDetails);
+      expect(jobDetailsElement).toBeInTheDocument();
+    });
+  });
+
+  it('downloads JSON on button click', async () => {
+    render(<JobDetailsModal idJob="123" />);
+    const openButton = screen.getByLabelText('details');
+    fireEvent.click(openButton);
+
+    const downloadButton = screen.getByText('DOWNLOAD JSON');
+    fireEvent.click(downloadButton);
+
+    // Mock implementation of URL.createObjectURL and a.download
+    const createObjectURLMock = jest.spyOn(URL, 'createObjectURL');
+    const downloadMock = jest.spyOn(document.createElement('a'), 'click');
+    createObjectURLMock.mockReturnValue('mocked-url');
+
+    await waitFor(() => {
+      expect(createObjectURLMock).toHaveBeenCalledWith(
+        new Blob([JSON.stringify('Mocked Job Details', null, 2)], {
+          type: 'application/json',
+        })
+      );
+
+      // Ensure downloadMock is called to simulate download
+      expect(downloadMock).toHaveBeenCalled();
+
+      // Restore the mocks
+      createObjectURLMock.mockRestore();
+      downloadMock.mockRestore();
+    });
+  });
+
+  it('shows success notification on successful fetch', async () => {
+    axios.get.mockResolvedValue({ data: 'Mocked Job Details' });
+
+    render(<JobDetailsModal idJob="123" />);
+    const openButton = screen.getByLabelText('details');
+    fireEvent.click(openButton);
+
+    await waitFor(() => {
+      const successNotification = screen.getByText('Success');
+      expect(successNotification).toBeInTheDocument();
+    });
+  });
+
+  it('shows error notification on fetch error', async () => {
+    axios.get.mockRejectedValue(new Error('Fetch Error'));
+
+    render(<JobDetailsModal idJob="123" />);
+    const openButton = screen.getByLabelText('details');
+    fireEvent.click(openButton);
+
+    await waitFor(() => {
+      const errorNotification = screen.getByText('error');
+      expect(errorNotification).toBeInTheDocument();
+    });
+  });
+});
